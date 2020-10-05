@@ -1,7 +1,7 @@
 # Site settings
 baseURL = "https://eduardohlg2000.netlify.app/"
 languageCode = "en-us"
-title = "Forty"
+title = "Eduardo Henrique's Portfolio"
 theme = "forty"
 
 # Enter your tracking code to enable Google Analytics
@@ -37,8 +37,7 @@ disqusShortname = ""
 
   # Navigation Section
   [params.navigation]
-    title = "Forty"
-    subtitle = "By HTML5 Up"
+    title = "Eduardo Henrique"
     menu = "Menu"
     # Optional logo as brand stored in img/
     # logo = "logo.png"
@@ -68,7 +67,7 @@ disqusShortname = ""
 
     # Button Style 1
     [[params.navigation.button1]]
-      name = "Check my CV"
+      name = "Get Started"
       url = "blogs"
 
     # Button Style 2
