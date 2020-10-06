@@ -51,8 +51,8 @@ disqusShortname = ""
     # To change the background image on the homepage banner, replace 'banner.jpg' in
     # the 'static/img' folder.
     title = "Hello, my name is Eduardo Henrique"
-    subtitle = "A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP\nAND RELEASED UNDER THE CREATIVE COMMONS."
-    buttonText = "Get Started"
+    subtitle = "THIS IS THE WEBSITE WITH MY R PROJECTS"
+    buttonText = "LEARN MORE"
 
 
   # Tiles Section
@@ -61,8 +61,8 @@ disqusShortname = ""
     # Display your showcases here.
     
     [[params.tiles.showcase]]
-      title = "Aliquam"
-      subtitle = "Ipsum Dolor Sit Amet"
+      title = "NYSE - Stocks"
+      subtitle = "Return/Risk relationship of NYSE Stocks"
       image = "pic01.jpg"
       url = "blogs/aliquam"
 
