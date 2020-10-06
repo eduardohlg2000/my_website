@@ -7,7 +7,7 @@ description: Lorem Etiam Nullam
 draft: false
 image: pic25.jpg
 keywords: ""
-slug: blogdois
+slug: blog
 title: Effects of Coronavirus on Boris Bikes
 ---
 ```{r, setup, include=FALSE}
