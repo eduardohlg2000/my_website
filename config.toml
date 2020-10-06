@@ -75,13 +75,13 @@ disqusShortname = ""
     [[params.tiles.showcase]]
       title = "Tim Burton vs Steven Spielberg: Who is the best director?"
       subtitle = "Mean IMDB movie ratings"
-      image = "pic08.jfif"
+      image = "pic08.jpg"
       url = "blogs/blog3"
 
     [[params.tiles.showcase]]
       title = "Inversion of the Yield curve, a sign of an iminent recession?"
       subtitle = "Analysis of yield curve inversions in the last 60 years"
-      image = "pic04.jpg"
+      image = "pic54.jpg"
       url = "blogs/blog4"
 
 
