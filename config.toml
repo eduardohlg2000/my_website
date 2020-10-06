@@ -79,10 +79,10 @@ disqusShortname = ""
       url = "blogs/blog3"
 
     [[params.tiles.showcase]]
-      title = "Ipsum"
-      subtitle = "Nisl Sed Aliquam"
+      title = "Inversion of the Yield curve, a sign of an iminent recession?"
+      subtitle = "Analysis of yield curve inversions in the last 60 years"
       image = "pic04.jpg"
-      url = "blogs/ipsum"
+      url = "blogs/blog4"
 
 
 
