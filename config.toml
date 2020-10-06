@@ -63,7 +63,7 @@ disqusShortname = ""
     [[params.tiles.showcase]]
       title = "NYSE - Stocks"
       subtitle = "Return/Risk relationship of NYSE Stocks"
-      image = "pic01.jpg"
+      image = "pic09.jpg"
       url = "blogs/aliquam"
 
     [[params.tiles.showcase]]
