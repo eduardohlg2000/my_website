@@ -1,0 +1,151 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T21:28:43-05:00"
+description: ""
+draft: false
+image: pic10.jpg
+keywords: ""
+slug: blog1
+title: Ipsum
+---
+
+  ```{r, setup}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(fivethirtyeight)
+library(here)
+library(skimr)
+library(janitor)
+library(vroom)
+library(tidyquant)
+library(ggplot2)
+library(ggrepel)
+library(gggenes)
+```
+
+
+
+
+
+# Returns of financial stocks
+
+
+```{r load_nyse_data, message=FALSE, warning=FALSE}
+
+#Loading the data and getting its Summary
+nyse <- read_csv(here::here("data","nyse.csv"))
+
+skim(nyse)
+```
+
+```{r companies_per_sector}
+
+# Grouping the companies by sector, counting the number of companies in each sector and arranging the data in descending order  
+stocks <- data.frame(nyse) %>% group_by(sector) %>%
+  count(sort=TRUE)
+
+# Plotting the number of companies listed in the NYSE by sector
+
+ggplot(data = stocks, aes(y= reorder(sector,n), x=n))+geom_bar(stat='identity')+labs(x="Number of companies", y="Sector", title = "Number of companies listed in the NYSE by sector")
+
+
+```
+
+
+```{r get_price_data, message=FALSE, warning=FALSE, cache=TRUE}
+# Notice the cache=TRUE argument in the chunk options. Because getting data is time consuming, 
+# cache=TRUE means that once it downloads data, the chunk will not run again next time you knit your Rmd
+
+#Adding our stocks in myStocks to later use this group for the analysis
+
+myStocks <- c("BLK","JPM","CS","GS","MS","RY","UBS","SPY" ) %>%
+  tq_get(get  = "stock.prices",
+         from = "2011-01-01",
+         to   = "2020-08-31") %>%
+  group_by(symbol) 
+
+glimpse(myStocks) # examine the structure of the resulting data frame
+```
+
+```{r calculate_returns, message=FALSE, warning=FALSE, cache=TRUE}
+#calculate daily returns
+myStocks_returns_daily <- myStocks %>%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = "daily", 
+               type       = "log",
+               col_rename = "daily_returns",
+               cols = c(nested.col))  
+
+#calculate monthly  returns
+myStocks_returns_monthly <- myStocks %>%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = "monthly", 
+               type       = "arithmetic",
+               col_rename = "monthly_returns",
+               cols = c(nested.col)) 
+
+#calculate yearly returns
+myStocks_returns_annual <- myStocks %>%
+  group_by(symbol) %>%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = "yearly", 
+               type       = "arithmetic",
+               col_rename = "yearly_returns",
+               cols = c(nested.col))
+```
+
+
+```{r summarise_monthly_returns}
+#Summarising the information about the monthly returns of the chosen stocks and calculating the min,max, median, mean and SD for each of the companies
+  analysis<- myStocks_returns_monthly %>%
+  summarize(mean_return=mean(monthly_returns),median_return=median(monthly_returns),sd_return=sd(monthly_returns),min_return=min(monthly_returns),max_return=max(monthly_returns))%>%
+  arrange(desc(mean_return))
+
+```
+
+```{r density_monthly_returns}
+
+# Plotting a density chart of the monthly returns for each of the stocks
+ggplot(myStocks_returns_monthly, 
+       aes(x= monthly_returns*100))+geom_density(kernel="gaussian")+labs(title="Density of Monthly Returns", x="Monthly Return(in %)", y="Density") + facet_wrap(~symbol)
+
+```
+
+What can you infer from this plot? Which stock is the riskiest? The least risky?
+
+From the plot it is clear to see that the individuals stocks are more risky than the ETF as their returns are more variable. Morgan Stanley is the riskiest stock with a volatility (standar deviation of the monthly returns) of 9.28% and the least risky, as it was expected, it is the SPY Index with a volatility of 3.81%. This was expected since the ETF is a combination of 500 stocks, which has its systematic risk lowered through diversification.
+
+
+```{r risk_return_plot}
+
+#Plotting the standard deviation against the mean return for the stocks chosen 
+ggplot(analysis, aes(x=sd_return*100, y=mean_return*100,label= symbol))+geom_point() + geom_text_repel()+ labs(title="Relation between the Mean Return and Standard Deviation", x="Standard Deviation (in %)", y="Mean Return (in %)")
+```
+
+What can you infer from this plot? Are there any stocks which, while being riskier, do not have a higher expected return?
+
+From the plot it is possible to see that CS is the worst performing stock within this group and it is the second most risky, which means that it has the lowest sharpe ratio (Return/Volatility), this way, it would have been the worst choice. On the other hand, you can also see that BlackRock (BLK) is the one with the greatest mean return while having a medium volatility compared to its peers. Lastly, comparing Morgan Stanley (MS) with SPY, it's clear to see that it would not have been worth to invest in it as the historical mean returns of both assets were similar.

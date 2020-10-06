@@ -1,0 +1,331 @@
+<!DOCTYPE HTML>
+<html>
+
+    <head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="Your description">
+	<meta name="author" content="Your name">
+	<meta name="generator" content="Hugo 0.75.1" />
+	<title>Ipsum &middot; Eduardo Henrique&#39;s Portfolio</title>
+	<!-- Stylesheets -->
+	
+	<link rel="stylesheet" href="/css/main.css"/>
+	
+	
+
+	
+
+	<!-- Custom Fonts -->
+	<link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	
+
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src="js/ie/html5shiv.js"></script>
+	<script src="js/ie/html5shiv.jsrespond.min.js"></script>
+	<![endif]-->
+</head>
+
+    <body>
+
+    <!-- Wrapper -->
+        <div id="wrapper">
+
+            <!-- Header -->
+    <header id="header" class="alt">
+        <a href="/" class="logo"><strong>London Business School - Master in Financial Analysis 2021</strong> <span></span></a>
+        <nav>
+            <a href="#menu"></a>
+        </nav>
+    </header>
+
+<!-- Menu -->
+    <nav id="menu">
+        <ul class="links">
+            
+                <li><a href="/">Home</a></li>
+            
+
+        </ul>
+        <ul class="actions vertical">
+            
+            
+        </ul>
+    </nav>
+
+        <!-- Main -->
+            <div id="main" class="alt">
+
+                
+                    <section id="one">
+                        <div class="inner">
+                            <header class="major">
+                                <h1>Ipsum</h1>
+                            </header>
+                            
+                                <span class="image main"><img src="/img/blogs/pic10.jpg" alt="" /></span>
+                            
+                            
+
+
+<pre class="r"><code>knitr::opts_chunk$set(
+message = FALSE, 
+warning = FALSE, 
+tidy=FALSE,     # display code as typed
+size=&quot;small&quot;)   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+fig.width=6.75, 
+fig.height=6.75,
+fig.align = &quot;center&quot;
+)</code></pre>
+<div id="returns-of-financial-stocks" class="section level1">
+<h1>Returns of financial stocks</h1>
+<pre class="r"><code>#Loading the data and getting its Summary
+nyse &lt;- read_csv(here::here(&quot;data&quot;,&quot;nyse.csv&quot;))
+
+skim(nyse)</code></pre>
+<table>
+<caption>(#tab:load_nyse_data)Data summary</caption>
+<tbody>
+<tr class="odd">
+<td align="left">Name</td>
+<td align="left">nyse</td>
+</tr>
+<tr class="even">
+<td align="left">Number of rows</td>
+<td align="left">508</td>
+</tr>
+<tr class="odd">
+<td align="left">Number of columns</td>
+<td align="left">6</td>
+</tr>
+<tr class="even">
+<td align="left">_______________________</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">Column type frequency:</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">character</td>
+<td align="left">6</td>
+</tr>
+<tr class="odd">
+<td align="left">________________________</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">Group variables</td>
+<td align="left">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">skim_variable</th>
+<th align="right">n_missing</th>
+<th align="right">complete_rate</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">empty</th>
+<th align="right">n_unique</th>
+<th align="right">whitespace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">symbol</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">508</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">name</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">48</td>
+<td align="right">0</td>
+<td align="right">505</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">ipo_year</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">33</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">sector</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">6</td>
+<td align="right">21</td>
+<td align="right">0</td>
+<td align="right">12</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">industry</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">62</td>
+<td align="right">0</td>
+<td align="right">103</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">summary_quote</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">31</td>
+<td align="right">34</td>
+<td align="right">0</td>
+<td align="right">508</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Grouping the companies by sector, counting the number of companies in each sector and arranging the data in descending order  
+stocks &lt;- data.frame(nyse) %&gt;% group_by(sector) %&gt;%
+  count(sort=TRUE)
+
+# Plotting the number of companies listed in the NYSE by sector
+
+ggplot(data = stocks, aes(y= reorder(sector,n), x=n))+geom_bar(stat=&#39;identity&#39;)+labs(x=&quot;Number of companies&quot;, y=&quot;Sector&quot;, title = &quot;Number of companies listed in the NYSE by sector&quot;)</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/companies_per_sector-1.png" width="648" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Notice the cache=TRUE argument in the chunk options. Because getting data is time consuming, 
+# cache=TRUE means that once it downloads data, the chunk will not run again next time you knit your Rmd
+
+#Adding our stocks in myStocks to later use this group for the analysis
+
+myStocks &lt;- c(&quot;BLK&quot;,&quot;JPM&quot;,&quot;CS&quot;,&quot;GS&quot;,&quot;MS&quot;,&quot;RY&quot;,&quot;UBS&quot;,&quot;SPY&quot; ) %&gt;%
+  tq_get(get  = &quot;stock.prices&quot;,
+         from = &quot;2011-01-01&quot;,
+         to   = &quot;2020-08-31&quot;) %&gt;%
+  group_by(symbol) 
+
+glimpse(myStocks) # examine the structure of the resulting data frame</code></pre>
+<pre><code>## Rows: 18,463
+## Columns: 8
+## Groups: symbol [8]
+## $ symbol   &lt;chr&gt; &quot;BLK&quot;, &quot;BLK&quot;, &quot;BLK&quot;, &quot;BLK&quot;, &quot;BLK&quot;, &quot;BLK&quot;, &quot;BLK&quot;, &quot;BLK&quot;, &quot;B...
+## $ date     &lt;date&gt; 2011-01-03, 2011-01-04, 2011-01-05, 2011-01-06, 2011-01-0...
+## $ open     &lt;dbl&gt; 192, 191, 190, 193, 192, 188, 192, 195, 194, 195, 199, 196...
+## $ high     &lt;dbl&gt; 195, 192, 193, 193, 192, 192, 196, 195, 196, 199, 200, 197...
+## $ low      &lt;dbl&gt; 190, 189, 189, 188, 185, 187, 191, 191, 192, 194, 194, 191...
+## $ close    &lt;dbl&gt; 190, 190, 192, 190, 188, 191, 193, 194, 196, 199, 197, 192...
+## $ volume   &lt;dbl&gt; 1085200, 794400, 925300, 727300, 886200, 898300, 734000, 8...
+## $ adjusted &lt;dbl&gt; 145, 145, 147, 145, 144, 146, 148, 148, 149, 152, 150, 146...</code></pre>
+<pre class="r"><code>#calculate daily returns
+myStocks_returns_daily &lt;- myStocks %&gt;%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = &quot;daily&quot;, 
+               type       = &quot;log&quot;,
+               col_rename = &quot;daily_returns&quot;,
+               cols = c(nested.col))  
+
+#calculate monthly  returns
+myStocks_returns_monthly &lt;- myStocks %&gt;%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = &quot;monthly&quot;, 
+               type       = &quot;arithmetic&quot;,
+               col_rename = &quot;monthly_returns&quot;,
+               cols = c(nested.col)) 
+
+#calculate yearly returns
+myStocks_returns_annual &lt;- myStocks %&gt;%
+  group_by(symbol) %&gt;%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = &quot;yearly&quot;, 
+               type       = &quot;arithmetic&quot;,
+               col_rename = &quot;yearly_returns&quot;,
+               cols = c(nested.col))</code></pre>
+<pre class="r"><code>#Summarising the information about the monthly returns of the chosen stocks and calculating the min,max, median, mean and SD for each of the companies
+  analysis&lt;- myStocks_returns_monthly %&gt;%
+  summarize(mean_return=mean(monthly_returns),median_return=median(monthly_returns),sd_return=sd(monthly_returns),min_return=min(monthly_returns),max_return=max(monthly_returns))%&gt;%
+  arrange(desc(mean_return))</code></pre>
+<pre class="r"><code># Plotting a density chart of the monthly returns for each of the stocks
+ggplot(myStocks_returns_monthly, 
+       aes(x= monthly_returns*100))+geom_density(kernel=&quot;gaussian&quot;)+labs(title=&quot;Density of Monthly Returns&quot;, x=&quot;Monthly Return(in %)&quot;, y=&quot;Density&quot;) + facet_wrap(~symbol)</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/density_monthly_returns-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>What can you infer from this plot? Which stock is the riskiest? The least risky?</p>
+<p>From the plot it is clear to see that the individuals stocks are more risky than the ETF as their returns are more variable. Morgan Stanley is the riskiest stock with a volatility (standar deviation of the monthly returns) of 9.28% and the least risky, as it was expected, it is the SPY Index with a volatility of 3.81%. This was expected since the ETF is a combination of 500 stocks, which has its systematic risk lowered through diversification.</p>
+<pre class="r"><code>#Plotting the standard deviation against the mean return for the stocks chosen 
+ggplot(analysis, aes(x=sd_return*100, y=mean_return*100,label= symbol))+geom_point() + geom_text_repel()+ labs(title=&quot;Relation between the Mean Return and Standard Deviation&quot;, x=&quot;Standard Deviation (in %)&quot;, y=&quot;Mean Return (in %)&quot;)</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/risk_return_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>What can you infer from this plot? Are there any stocks which, while being riskier, do not have a higher expected return?</p>
+<p>From the plot it is possible to see that CS is the worst performing stock within this group and it is the second most risky, which means that it has the lowest sharpe ratio (Return/Volatility), this way, it would have been the worst choice. On the other hand, you can also see that BlackRock (BLK) is the one with the greatest mean return while having a medium volatility compared to its peers. Lastly, comparing Morgan Stanley (MS) with SPY, it’s clear to see that it would not have been worth to invest in it as the historical mean returns of both assets were similar.</p>
+</div>
+
+                        </div>
+                    </section>
+            <!-- Disqus Inject -->
+                
+            </div>
+            
+        <!-- Footer -->
+            
+                <!-- Footer -->
+    <footer id="footer">
+        <div class="inner">
+            <ul class="icons">
+                
+                    <li><a href="https://www.linkedin.com/in/eduardo-henrique-de-lima-gomes-2b167911b/" class="icon alt fa-linkedin" target="_blank"><span class="label">LinkedIn</span></a></li>
+                
+            </ul>
+            <ul class="copyright">
+                <li>&copy; Resenha Financeira</li>
+                
+            </ul>
+        </div>
+    </footer>
+
+            
+        </div>
+
+    <!-- Scripts -->
+        <!-- Scripts -->
+    <!-- jQuery -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.scrolly.min.js"></script>
+    <script src="/js/jquery.scrollex.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/util.js"></script>
+
+    
+
+    <!-- Main JS -->
+    <script src="/js/main.js"></script>
+
+    
+
+    
+
+    </body>
+</html>
