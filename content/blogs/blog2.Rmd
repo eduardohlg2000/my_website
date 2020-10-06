@@ -5,7 +5,7 @@ categories:
 date: "2017-10-31T22:26:09-05:00"
 description: Lorem Etiam Nullam
 draft: false
-image: pic25.jpg
+image: pic08.jpg
 keywords: ""
 slug: blog
 title: Effects of Coronavirus on Boris Bikes
@@ -70,10 +70,6 @@ bike <- bike0 %>%
 
 We can easily create a facet grid that plots bikes hired by month and year.
 
-```{r tfl_month_year_grid, echo=FALSE, out.width="100%"}
-knitr::include_graphics(here::here("images", "tfl_distributions_monthly.png"), error = FALSE)
-```
-
 Look at May and Jun and compare 2020 with the previous years. What's happening?
 
 Due to the lockdown caused by the COVID19 pandemic, the population that would be in the streets or commuting to work using Boris Bikes has plummeted and this is the reason why the density curves for the months of April, May and June are more skewed to the left and with a lower kurtosis, showing that the frequence and "intensity" of usage of the Santander bikes scheme has lowered during this global pandemic.
@@ -81,9 +77,8 @@ Due to the lockdown caused by the COVID19 pandemic, the population that would be
 
 However, the challenge I want you to work on is to reproduce the following two graphs.
 
-```{r tfl_absolute_monthly_change, echo=FALSE, out.width="100%"}
-knitr::include_graphics(here::here("images", "tfl_monthly.png"), error = FALSE)
-```
+
+
 ```{r tfl_absolute_monthly_change-GROUP26"}
 
 # First we filter the data from 2015 and on
@@ -156,9 +151,7 @@ excess_rentals_graph1
 
 The second one looks at percentage changes from the expected level of weekly rentals. The two grey shaded rectangles correspond to the second (weeks 14-26) and fourth (weeks 40-52) quarters.
 
-```{r tfl_percent_change, echo=FALSE, out.width="100%"}
-knitr::include_graphics(here::here("images", "tfl_weekly.png"), error = FALSE)
-```
+
 ```{r tfl_absolute_weekly_change-GROUP26",out.width="100%"}
 
 # First we filter the data from 2015 and on
