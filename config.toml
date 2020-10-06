@@ -73,10 +73,10 @@ disqusShortname = ""
       url = "blogs/blog2"
 
     [[params.tiles.showcase]]
-      title = "Magna"
-      subtitle = "Lorem Etiam Nullam"
+      title = "Tim Burton vs Steven Spielberg: Who is the best director?"
+      subtitle = "Mean IMDB movie ratings"
       image = "pic03.jpg"
-      url = "blogs/magna"
+      url = "blogs/blog3"
 
     [[params.tiles.showcase]]
       title = "Ipsum"
