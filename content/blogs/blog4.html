@@ -3,14 +3,170 @@ categories:
 - ""
 - ""
 date: "2017-10-31T22:42:51-05:00"
-description: Nullam et orci eu lorem consequat tincidunt vivamus et sagittis magna sed nunc rhoncus condimentum sem. In efficitur ligula tate urna. Maecenas massa sed magna lacinia magna pellentesque lorem ipsum dolor. Nullam et orci eu lorem consequat tincidunt. Vivamus et sagittis tempus.
+description: 
 draft: false
 image: pic99.jpg
 keywords: ""
 slug: blog4
-title: Inversion of the Yield curve, a sign of an iminent recession?
+title: Impact of the pandemic on Boris bikes rentals
 ---
 
 
 
+<div id="challenge-2-excess-rentals-in-tfl-bike-sharing" class="section level1">
+<h1>Challenge 2: Excess rentals in TfL bike sharing</h1>
+<p>Recall the TfL data on how many bikes were hired every single day. We can get the latest data by running the following</p>
+<pre class="r"><code>url &lt;- &quot;https://data.london.gov.uk/download/number-bicycle-hires/ac29363e-e0cb-47cc-a97a-e216d900a6b0/tfl-daily-cycle-hires.xlsx&quot;
 
+# Download TFL data to temporary file
+httr::GET(url, write_disk(bike.temp &lt;- tempfile(fileext = &quot;.xlsx&quot;)))</code></pre>
+<pre><code>## Response [https://airdrive-secure.s3-eu-west-1.amazonaws.com/london/dataset/number-bicycle-hires/2020-09-18T09%3A06%3A54/tfl-daily-cycle-hires.xlsx?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAJJDIMAIVZJDICKHA%2F20201006%2Feu-west-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20201006T234553Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=e43e4abe40a7c29e1674710c908d0510f0d41e7676cae72bc9c48424835d649b&amp;X-Amz-SignedHeaders=host]
+##   Date: 2020-10-06 23:45
+##   Status: 200
+##   Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+##   Size: 165 kB
+## &lt;ON DISK&gt;  C:\Users\natal\AppData\Local\Temp\RtmpkXN9KW\file55c10ea38c9.xlsx</code></pre>
+<pre class="r"><code># Use read_excel to read it as dataframe
+bike0 &lt;- read_excel(bike.temp,
+                   sheet = &quot;Data&quot;,
+                   range = cell_cols(&quot;A:B&quot;))
+
+# change dates to get year, month, and week
+bike &lt;- bike0 %&gt;% 
+  clean_names() %&gt;% 
+  rename (bikes_hired = number_of_bicycle_hires) %&gt;% 
+  mutate (year = year(day),
+          month = lubridate::month(day, label = TRUE),
+          week = isoweek(day))</code></pre>
+<p>We can easily create a facet grid that plots bikes hired by month and year.</p>
+<p>Look at May and Jun and compare 2020 with the previous years. What’s happening?</p>
+<p>Due to the lockdown caused by the COVID19 pandemic, the population that would be in the streets or commuting to work using Boris Bikes has plummeted and this is the reason why the density curves for the months of April, May and June are more skewed to the left and with a lower kurtosis, showing that the frequence and “intensity” of usage of the Santander bikes scheme has lowered during this global pandemic.</p>
+<p>However, the challenge I want you to work on is to reproduce the following two graphs.</p>
+<pre class="r"><code># First we filter the data from 2015 and on
+bike_monthly &lt;- bike %&gt;% 
+  filter(year&gt;=&quot;2015&quot;)
+# Then we group by month and year to summarise by the average of bikes hired in each month of the data
+bike_monthly &lt;- bike_monthly %&gt;% 
+  group_by(year,month) %&gt;% 
+  summarise(bikes_hired = median(bikes_hired))
+
+
+# After that we group only by month to create a colunm &quot;Average&quot; that is related to average of bikes rented in each month
+bike_monthly&lt;- bike_monthly %&gt;% 
+  group_by(month) %&gt;% 
+  mutate(average= median(bikes_hired))
+
+
+# Then, we create a column called &quot;Excess_rentals&quot; to know by how many rentals of bikes the month exceeded or was below the expected rentals, which is the average for that month
+bike_monthly &lt;- bike_monthly %&gt;% 
+  mutate(excess_rentals = bikes_hired - average) %&gt;% 
+  ungroup()
+
+# We used the function interpolate in order to make the graphic easier to be comprehended 
+bike_interpolated &lt;- bike_monthly  %&gt;% 
+  #We splitted the data for each year
+  split(.$year) %&gt;% 
+  
+  #Now we use the map_df function to create columns called year.x, year.y, nat.x and nat.y
+  map_df(~data.frame(year = approx(.x$month, .x$bikes_hired, n = 100), 
+                     #interpolated months and avg hire
+                     nat = approx(.x$month, .x$average, n = 100), 
+                     year = .x$year[1],
+                     month = .x$month[1]))
+
+#We will use this information to plot the graph in the right order of months and with the exact same name 
+month_label &lt;- c(&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;,
+           &quot;Apr&quot;, &quot;May&quot;, &quot;Jun&quot;,
+           &quot;Jul&quot;, &quot;Aug&quot;,&quot;Sep&quot;, 
+           &quot;Oce&quot;, &quot;Nov&quot;, &quot;Dec&quot;)
+
+#After treating the data, we plot the graph, divided by year 
+ggplot(bike_interpolated, aes(x = nat.x,y= nat.y)) +  facet_wrap(~year) +
+  geom_line(color = &quot;#0019f6&quot;, size = 0.75) +
+  geom_line(aes(nat.x, year.y), color = &quot;black&quot;) +
+  #No we fill the area between the two plots by using geom_ribbon
+  geom_ribbon(aes(ymin = nat.y, ymax = pmin(year.y, nat.y)), fill = &quot;#deafb1&quot;) +
+  geom_ribbon(aes(ymin = year.y, ymax = pmin(year.y, nat.y)), fill = &quot;#beebc2&quot;) +
+  #Now we change the theme
+  theme_minimal() +
+  #After we change the x axis to make in continuous with the interpolated data and using the above mentioned labels
+  scale_x_continuous(breaks= c(1,2,3,4,5,6,7,8,9,10,11,12),
+        labels=month_label) +
+  #Then we add the titles
+  labs(title = &quot;Monthly changes in TfL bike rentals&quot;,
+       subtitle = &quot;Change from monthly average shown in blue \nand calculated between 2015-2019&quot;,
+       caption = &quot;Source: TfL, London Data Store&quot;,
+       y = &quot;Bike rentals&quot;,
+       x = &quot;&quot;) +
+  #Lastly, we make the titles bold, when necessary
+  theme(plot.title = element_text(face = &quot;bold&quot;),
+        axis.title = element_text(face = &quot;bold&quot;),
+        plot.caption = element_text(face = &quot;bold&quot;))</code></pre>
+<p><img src="/blogs/blog4_files/figure-html/tfl_absolute_monthly_change_code-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>The second one looks at percentage changes from the expected level of weekly rentals. The two grey shaded rectangles correspond to the second (weeks 14-26) and fourth (weeks 40-52) quarters.</p>
+<pre class="r"><code># First we filter the data from 2015 and on
+bike_weekly &lt;- bike %&gt;% 
+  filter(year&gt;=&quot;2015&quot;)
+
+# Then we group by week and year to summarise by the average of bikes hired in each week of the data
+bike_weekly &lt;- bike_weekly %&gt;% 
+  group_by(year,week) %&gt;% 
+  summarise(bikes_hired = median(bikes_hired))
+
+# After that we group only by month to create a colunm &quot;Average&quot; that is related to average of bikes rented in each week
+bike_weekly&lt;- bike_weekly %&gt;% 
+  group_by(week) %&gt;% 
+  mutate(average= median(bikes_hired))
+
+
+# Then, we create a column called &quot;Rentals_change&quot; to know by how much the weekly rentals has changed compared to the average
+bike_weekly &lt;- bike_weekly %&gt;% 
+  mutate(rentals_change = ((bikes_hired - average)/average)) %&gt;% 
+  ungroup() %&gt;% 
+  
+  #This line of code creates a column that we will use to know if the change of rentals was positive (Above) or negative (Below)
+   mutate(change = ifelse(rentals_change&gt;=0, &quot;Above&quot;, &quot;Below&quot;)) %&gt;% 
+
+#This line of code creates another column that will be used to shade the graph depending on the week
+  mutate(shade = if_else(week &lt;=13|week&gt;=26&amp;week&lt;=39,&quot;white&quot;,&quot;grey&quot;)) %&gt;% 
+  
+  #This line of code creates another column that will be used to change the colour of the rug depending on the column &quot;Change&quot;
+  mutate(rug_colour = if_else(change==&quot;Below&quot;,&quot;#DEAFB1&quot;,&quot;#BEEBC2&quot;))
+
+
+#After treating the data, we plot the graph, divided by year 
+ggplot(bike_weekly, aes(x = week,y= rentals_change)) +
+  geom_line()+
+  
+   #No we fill the area between the two plots by using geom_ribbon
+  geom_ribbon(aes(ymin = 0, ymax = pmin(0,rentals_change), fill = &quot;Above&quot;)) + 
+geom_ribbon(aes(ymin = rentals_change, ymax = pmin(0,rentals_change), fill = &quot;Below&quot;))+
+  facet_wrap(~year) +
+  
+  # This line of code changes the filling of the shade of the graph
+  geom_tile(aes(fill = shade),
+            width = 1, height = Inf, alpha = 0.3)+ 
+  
+  # Here we assign the column &quot;rug color&quot; to the color to the rug that will be used
+  geom_rug(color = bike_weekly$rug_colour,sides=&quot;b&quot;) +
+  
+#Now we assign the colors that will be used in the plot
+  scale_fill_manual(values = c(&quot;#DEAFB1&quot;,&quot;#BEEBC2&quot;,&quot;grey&quot;,&quot;white&quot;))+
+  
+  theme_minimal()+
+  #Including breaks to the graph
+  scale_x_continuous(breaks=seq(13, 53, 13))+
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) + 
+  
+  #In these three lines we change and customize the theme used
+  theme(axis.ticks = element_blank())+
+  theme(legend.position = &quot;none&quot;) + 
+  theme(panel.border = element_blank())+
+  
+  # Then we add the names of the Titles
+  labs(x = &quot;&quot;, y = &quot;&quot;, title = &quot;Weekly changes in TfL bike rentals&quot;, subtitle = &quot;% change from weekly averages \ncalculated between 2015-2019&quot;, caption = &quot;Source: TfL, London Data Store&quot;)+
+ coord_fixed(ratio = 25)</code></pre>
+<p><img src="/blogs/blog4_files/figure-html/tfl_absolute_weekly_change_code-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>Should you use the mean or the median to calculate your expected rentals? Why?</p>
+<p>In our opinion, we should use the median to calculate the expected rentals. Just as it was pointed in the graph “Distribution of bikes hired per month”, there are months that are completely skewed or that have a very low kurtosis (April to June of 2020), then, if we would use the average, the impact of these “outliers” would affect our data and produce results that don’t really express the central tendency(median) about the hiring of Boris Bikes.</p>
+</div>
