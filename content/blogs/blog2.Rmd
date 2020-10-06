@@ -149,11 +149,7 @@ excess_rentals_graph1 <- ggplot(bike_interpolated, aes(x = nat.x,y= nat.y)) +  f
         axis.title = element_text(face = "bold"),
         plot.caption = element_text(face = "bold"))
 
-# This line saves the graph as a .jpg file
-ggsave("excess_rentals_graph1.jpg",plot=excess_rentals_graph1,width = 10,height = 8)
-
-# And this line includes the above mentioned picture in the HTML knited file
-knitr::include_graphics(here::here("excess_rentals_graph1.jpg"))
+excess_rentals_graph1
 
   
 ```
@@ -228,13 +224,7 @@ geom_ribbon(aes(ymin = rentals_change, ymax = pmin(0,rentals_change), fill = "Be
   labs(x = "", y = "", title = "Weekly changes in TfL bike rentals", subtitle = "% change from weekly averages \ncalculated between 2015-2019", caption = "Source: TfL, London Data Store")+
  coord_fixed(ratio = 25)
 
-# This line saves the graph as a .jpg file
-ggsave("excess_rentals_graph2.jpg",plot=excess_rentals_graph2,width = 10,height = 8)
-
-
-# # And this line includes the above mentioned picture in the HTML knited file
-knitr::include_graphics(here::here("excess_rentals_graph2.jpg"))
-
+excess_rentals_graph2
 ```
 
 

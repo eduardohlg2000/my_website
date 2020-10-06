@@ -69,7 +69,7 @@ disqusShortname = ""
     [[params.tiles.showcase]]
       title = "Santander Bikes"
       subtitle = "Effects of Coronavirus on Boris Bikes"
-      image = "pic22.jpg"
+      image = "pic44.jpg"
       url = "blogs/blog2"
 
     [[params.tiles.showcase]]
