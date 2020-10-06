@@ -3,10 +3,176 @@ categories:
 - ""
 - ""
 date: "2017-10-31T22:26:13-05:00"
-description: Nullam et orci eu lorem consequat tincidunt vivamus et sagittis magna sed nunc rhoncus condimentum sem. In efficitur ligula tate urna. Maecenas massa sed magna lacinia magna pellentesque lorem ipsum dolor. Nullam et orci eu lorem consequat tincidunt. Vivamus et sagittis tempus.
+description: 
 draft: false
-image: pic08.jpg
+image: pic16.jpg
 keywords: ""
-slug: tempus
-title: Tempus
+slug: blog3
+title: Steven Spielberg or Tim Burton, who is the best director?
 ---
+
+```{r, setup}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(infer)
+library(openintro)
+library(lubridate)
+```
+
+
+
+# IMDB ratings: Differences between directors
+
+Recall the IMBD ratings data. I would like you to explore whether the mean IMDB rating for Steven Spielberg and Tim Burton are the same or not. I have already calculated the confidence intervals for the mean ratings of these two directors and as you can see they overlap. 
+
+
+
+First, I would like you to reproduce this graph. You may find `geom_errorbar()` and `geom_rect()` useful.
+
+In addition, you will run a hypothesis test. You should use both the `t.test` command and the `infer` package to simulate from a null distribution, where you assume zero difference between the two.
+
+> Before anything, write down the null and alternative hypotheses, as well as the resulting test statistic and the associated t-stat or p-value. At the end of the day, what do you conclude?
+
+Null hypothesis: Mean ratings for Steven Spielberg and Tim Burton's movies on IMDB are equal
+Alternative hypothesis: Mean ratings for Steven Spielberg and Tim Burton's movies on IMDB are not equal
+
+You can load the data and examine its structure
+
+
+```{r load-movies-data}
+#Now we first read our data from a csv file them glimpse to analyse it
+movies <- read_csv(here::here("data", "movies.csv"))
+glimpse(movies)
+```
+
+Your R code and analysis should go here. If you want to insert a blank chunk of R code you can just hit `Ctrl/Cmd+Alt+I` 
+
+```{r}
+#Now, we want to select the date that we will use which is the rating and the directors
+IMBD <- movies %>% 
+  select(rating, director) %>% 
+  
+  # We also filtered by the two directors in question
+  filter(director %in% c("Tim Burton", "Steven Spielberg")) %>% 
+
+  # In order to compare both directors, we group by this variable
+  group_by(director) %>% 
+  
+  #To calculate the necessary information to run a hypothesis test we use summarise
+  summarise (
+          mean_rating = mean(rating, na.rm = TRUE),
+            sd_rating = sd(rating, na.rm=TRUE),
+            count = n(),
+            se_rating = sd_rating/sqrt(count),
+            t_critical = qt(0.975, count-1), 
+            margin_of_error = t_critical * se_rating,
+            lower = mean_rating - t_critical * se_rating,
+            upper = mean_rating + t_critical * se_rating
+            )
+
+
+# This line exhibits our calculations
+IMBD %>% tbl_df %>% rmarkdown::paged_table()
+
+
+#Now we are going to replicate the graph
+
+  ggplot(IMBD, 
+  aes(x= mean_rating,
+  y = reorder(director,mean_rating)))+
+  geom_point()+
+  theme_bw() +
+  theme(legend.position = "none")+
+  
+  # The next tree lines include the mean ratings and the upper and lower boundaries of the confidence interval previously calculated
+  geom_text(aes(label = round(mean_rating, 2)), size = 6, hjust = 0.5,vjust = -1)+
+  
+  geom_text(aes(label = round(lower, 2)), hjust = 6, vjust = -2) +
+  geom_text(aes(label = round(upper, 2)), hjust = -5.5, vjust = -2) +
+  
+  # This line includes the error bar 
+  geom_errorbar(aes(xmin = lower, 
+                    xmax = upper, 
+                    colour = director, 
+                    fill = director), 
+                width = 0.1, 
+                size = 2) +
+  
+  # This line includes the shade to the graph in the overlap of the confidence intervals
+  geom_rect(xmin = 7.27, xmax = 7.33, ymin = 0, ymax = 10, fill = "grey", aes(alpha = 0.3))+
+
+  labs(title = "Do Spielberg and Burton have the same IMDB ratings",
+       subtitle = "95% confidence intervals overlap", 
+       x = "Mean IMDB ratings", 
+       y = "") +
+  theme(plot.title = element_text(face = "bold"))
+  
+
+
+
+
+
+```
+
+```{r}
+
+#Now, we wnat to select the date that we will use which is the rating and the directors
+steve_tim <- movies %>% 
+  select(rating, director) %>% 
+  filter(director %in% c("Tim Burton", "Steven Spielberg")) 
+
+# In this line we do the ttest with the previously selected data
+t.test(rating ~ director, data = steve_tim)
+
+
+# In order to compare the two methods, we will run the test again using the "infer" package
+obs_diff_IMBD <- steve_tim %>%
+  specify(rating ~ director) %>%
+  calculate(stat = "diff in means", order = c("Tim Burton", "Steven Spielberg"))
+
+
+null_dist_IMBD <- steve_tim %>%
+  specify(rating ~ director) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("Tim Burton", "Steven Spielberg"))
+
+
+ggplot(data = null_dist_IMBD, aes(x = stat)) +
+  geom_histogram()
+
+null_dist_IMBD %>% visualize() +
+  shade_p_value(obs_stat = obs_diff_IMBD, direction = "two-sided")
+
+null_dist_IMBD %>%
+  get_p_value(obs_stat = obs_diff_IMBD, direction = "two_sided")
+
+```
+
+Using the infer package we get a p-value of 0.006 which is much smaller than 0.05. Then, we can conclude that there is a relevant difference between the mean IMDB ratings for the two directors in question
+
