@@ -75,7 +75,7 @@ disqusShortname = ""
     [[params.tiles.showcase]]
       title = "Tim Burton vs Steven Spielberg: Who is the best director?"
       subtitle = "Mean IMDB movie ratings"
-      image = "pic08.jpg"
+      image = "pic08.jfif"
       url = "blogs/blog3"
 
     [[params.tiles.showcase]]
