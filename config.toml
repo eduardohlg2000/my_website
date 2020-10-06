@@ -41,9 +41,11 @@ disqusShortname = ""
     # Optional logo as brand stored in img/
     # logo = "logo.png"
 
-    
+    [[params.navigation.links]]
+      name = "Home"
+      url = "#"
 
-
+  
   # Banner section
   [params.banner]
     # To change the background image on the homepage banner, replace 'banner.jpg' in
