@@ -37,8 +37,7 @@ disqusShortname = ""
 
   # Navigation Section
   [params.navigation]
-    title = "Eduardo Henrique"
-    menu = "Menu"
+    title = "London Business School - Master in Financial Analysis 2021"
     # Optional logo as brand stored in img/
     # logo = "logo.png"
 
