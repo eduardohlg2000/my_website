@@ -67,10 +67,10 @@ disqusShortname = ""
       url = "blogs/blog1"
 
     [[params.tiles.showcase]]
-      title = "Tempus"
-      subtitle = "Feugiat Amet Tempus"
-      image = "pic02.jpg"
-      url = "blogs/tempus"
+      title = "Santander Bikes"
+      subtitle = "Effects of Coronavirus on Boris Bikes"
+      image = "pic22.jpg"
+      url = "blogs/blog2"
 
     [[params.tiles.showcase]]
       title = "Magna"
