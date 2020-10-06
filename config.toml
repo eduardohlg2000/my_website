@@ -67,8 +67,8 @@ disqusShortname = ""
       url = "blogs/blog1"
 
     [[params.tiles.showcase]]
-      title = "Santander Bikes"
-      subtitle = "Effects of Coronavirus on Boris Bikes"
+      title = "Approval of President Donald Trump"
+      subtitle = "Effects of Coronavirus on Donald Trump's Approval Rate"
       image = "pic15.jpg"
       url = "blogs/blog2"
 

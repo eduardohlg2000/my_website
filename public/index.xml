@@ -26,12 +26,13 @@
     </item>
     
     <item>
-      <title>Magna</title>
-      <link>/blogs/magna/</link>
+      <title>Effects of Coronavirus on Boris Bikes</title>
+      <link>/blogs/blog2/</link>
       <pubDate>Tue, 31 Oct 2017 22:26:09 -0500</pubDate>
       
-      <guid>/blogs/magna/</guid>
-      <description></description>
+      <guid>/blogs/blog2/</guid>
+      <description>Trump’s Approval MarginsAs we saw in class, fivethirtyeight.com has detailed data on all polls that track the president’s approval
+# Import approval polls dataapproval_polllist &amp;lt;- read_csv(&amp;#39;https://projects.fivethirtyeight.com/trump-approval-data/approval_polllist.csv&amp;#39;) glimpse(approval_polllist)## Rows: 15,730## Columns: 22## $ president &amp;lt;chr&amp;gt; &amp;quot;Donald Trump&amp;quot;, &amp;quot;Donald Trump&amp;quot;, &amp;quot;Donald Trump&amp;quot;,...## $ subgroup &amp;lt;chr&amp;gt; &amp;quot;All polls&amp;quot;, &amp;quot;All polls&amp;quot;, &amp;quot;All polls&amp;quot;, &amp;quot;All pol...## $ modeldate &amp;lt;chr&amp;gt; &amp;quot;10/6/2020&amp;quot;, &amp;quot;10/6/2020&amp;quot;, &amp;quot;10/6/2020&amp;quot;, &amp;quot;10/6/20...## $ startdate &amp;lt;chr&amp;gt; &amp;quot;1/20/2017&amp;quot;, &amp;quot;1/20/2017&amp;quot;, &amp;quot;1/20/2017&amp;quot;, &amp;quot;1/21/20.</description>
     </item>
     
     <item>

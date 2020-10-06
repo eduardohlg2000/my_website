@@ -10,6 +10,7 @@ keywords: ""
 slug: blog2
 title: Effects of Coronavirus on Boris Bikes
 ---
+
 ```{r, setup, include=FALSE}
 knitr::opts_chunk$set(
   message = FALSE, 
@@ -42,186 +43,58 @@ library(vroom)
 
 
 
-# Challenge 2: Excess rentals in TfL bike sharing
+# Trump's Approval Margins
 
-Recall the TFL data on how many bikes were hired every single day. We can get the latest data by running the following
+As we saw in class, fivethirtyeight.com has detailed data on [all polls that track the president's approval ](https://projects.fivethirtyeight.com/trump-approval-ratings)
 
-```{r, get_tfl_data, cache=TRUE}
-url <- "https://data.london.gov.uk/download/number-bicycle-hires/ac29363e-e0cb-47cc-a97a-e216d900a6b0/tfl-daily-cycle-hires.xlsx"
+```{r, cache=TRUE}
+# Import approval polls data
 
-# Download TFL data to temporary file
-httr::GET(url, write_disk(bike.temp <- tempfile(fileext = ".xlsx")))
+approval_polllist <- read_csv('https://projects.fivethirtyeight.com/trump-approval-data/approval_polllist.csv') 
 
-# Use read_excel to read it as dataframe
-bike0 <- read_excel(bike.temp,
-                   sheet = "Data",
-                   range = cell_cols("A:B"))
+glimpse(approval_polllist)
 
-# change dates to get year, month, and week
-bike <- bike0 %>% 
-  clean_names() %>% 
-  rename (bikes_hired = number_of_bicycle_hires) %>% 
-  mutate (year = year(day),
-          month = lubridate::month(day, label = TRUE),
-          week = isoweek(day))
+# Use `lubridate` to fix dates, as they are given as characters.
+library(lubridate)
+approval_polllist_fixdates <- approval_polllist %>% 
+  mutate(timestamp = parse_date_time(timestamp, orders = "HMSdmy"),modeldate = mdy(modeldate), startdate = mdy(startdate), enddate = mdy(enddate), createddate = mdy(createddate))
+
 ```
 
+## Create a plot
 
+What I would like you to do is to calculate the average net approval rate (approve- disapprove) for each week since he got into office. I want you plot the net approval, along with its 95% confidence interval. There are various dates given for each poll, please use `enddate`, i.e., the date the poll ended.
 
-We can easily create a facet grid that plots bikes hired by month and year.
+You can facet by year, and add an orange line at zero. Your plot should look like this:
 
-Look at May and Jun and compare 2020 with the previous years. What's happening?
+```{r trump_marginsCalc, echo=FALSE, out.width="100%"}
+approval_polllist_AvgNetAp <- approval_polllist_fixdates %>% 
+  filter(subgroup=="Voters") %>% 
+  mutate(week = week(enddate), year=year(enddate)) %>% 
+  mutate(Avg_Net_Approval = adjusted_approve - adjusted_disapprove) %>% 
+  group_by(week, year) %>% 
+  summarise(Mean = mean(Avg_Net_Approval),
+            lower = Mean - qt(0.975, 194)*sd(Avg_Net_Approval)/sqrt(n()),
+            upper = Mean + qt(0.975, 194)*sd(Avg_Net_Approval)/sqrt(n())
+            ) %>%
+  unique(by = c("week", "year")) %>% 
+   arrange(year, week)
 
-Due to the lockdown caused by the COVID19 pandemic, the population that would be in the streets or commuting to work using Boris Bikes has plummeted and this is the reason why the density curves for the months of April, May and June are more skewed to the left and with a lower kurtosis, showing that the frequence and "intensity" of usage of the Santander bikes scheme has lowered during this global pandemic.
+Approval_plot <- ggplot(approval_polllist_AvgNetAp, aes(x=week,y=Mean, color = as.factor(year))) +   geom_line() + 
+  facet_wrap(~year) + 
+  geom_point(size = 1) + 
+  geom_hline(yintercept=0, color = "gold")+
+  labs(title = "Trump's net approval consistently negative", y = "Avg Net Approval (%)", x = "Week") + 
+  theme_bw() +
+  geom_ribbon(aes(ymin=lower, ymax=upper), linetype=1, alpha=0.1)+
+  theme(legend.position="none")+
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.1, decimal.mark = '.'), 
+              breaks = c(7.5, 5, 2.5,0.0,-2.5, -5.0, -7.5, -10.0, -12.5, -15.0, -17.5, -20.0))
+Approval_plot
 
-
-However, the challenge I want you to work on is to reproduce the following two graphs.
-
-
-
-```{r tfl_absolute_monthly_change-GROUP26"}
-
-# First we filter the data from 2015 and on
-bike_monthly <- bike %>% 
-  filter(year>="2015")
-
-
-# Then we group by month and year to summarise by the average of bikes hired in each month of the data
-bike_monthly <- bike_monthly %>% 
-  group_by(year,month) %>% 
-  summarise(bikes_hired = median(bikes_hired))
-
-
-# After that we group only by month to create a colunm "Average" that is related to average of bikes rented in each month
-bike_monthly<- bike_monthly %>% 
-  group_by(month) %>% 
-  mutate(average= median(bikes_hired))
-
-
-# Then, we create a column called "Excess_rentals" to know by how many rentals of bikes the month exceeded or was below the expected rentals, which is the average for that month
-bike_monthly <- bike_monthly %>% 
-  mutate(excess_rentals = bikes_hired - average) %>% 
-  ungroup()
-
-# We used the function interpolate in order to make the graphic easier to be comprehended 
-bike_interpolated <- bike_monthly  %>% 
-  #We splitted the data for each year
-  split(.$year) %>% 
-  
-  #Now we use the map_df function to create columns called year.x, year.y, nat.x and nat.y
-  map_df(~data.frame(year = approx(.x$month, .x$bikes_hired, n = 100), 
-                     #interpolated months and avg hire
-                     nat = approx(.x$month, .x$average, n = 100), 
-                     year = .x$year[1],
-                     month = .x$month[1]))
-
-#We will use this information to plot the graph in the right order of months and with the exact same name 
-month_label <- c("Jan", "Feb", "Mar",
-           "Apr", "May", "Jun",
-           "Jul", "Aug","Sep", 
-           "Oce", "Nov", "Dec")
-
-#After treating the data, we plot the graph, divided by year 
-excess_rentals_graph1 <- ggplot(bike_interpolated, aes(x = nat.x,y= nat.y)) +  facet_wrap(~year) +
-  geom_line(color = "#0019f6", size = 0.75) +
-  geom_line(aes(nat.x, year.y), color = "black") +
-  #No we fill the area between the two plots by using geom_ribbon
-  geom_ribbon(aes(ymin = nat.y, ymax = pmin(year.y, nat.y)), fill = "#deafb1") +
-  geom_ribbon(aes(ymin = year.y, ymax = pmin(year.y, nat.y)), fill = "#beebc2") +
-  #Now we change the theme
-  theme_minimal() +
-  #After we change the x axis to make in continuous with the interpolated data and using the above mentioned labels
-  scale_x_continuous(breaks= c(1,2,3,4,5,6,7,8,9,10,11,12),
-        labels=month_label) +
-  #Then we add the titles
-  labs(title = "Monthly changes in TfL bike rentals",
-       subtitle = "Change from monthly average shown in blue \nand calculated between 2015-2019",
-       caption = "Source: TfL, London Data Store",
-       y = "Bike rentals",
-       x = "") +
-  #Lastly, we make the titles bold, when necessary
-  theme(plot.title = element_text(face = "bold"),
-        axis.title = element_text(face = "bold"),
-        plot.caption = element_text(face = "bold"))
-
-excess_rentals_graph1
-
-  
 ```
+## Compare Confidence Intervals
 
-The second one looks at percentage changes from the expected level of weekly rentals. The two grey shaded rectangles correspond to the second (weeks 14-26) and fourth (weeks 40-52) quarters.
+Compare the confidence intervals for `week 15` (6-12 April 2020) and `week 34` (17-23 August 2020). Can you explain what's going on? One paragraph would be enough.
 
-
-```{r tfl_absolute_weekly_change-GROUP26",out.width="100%"}
-
-# First we filter the data from 2015 and on
-bike_weekly <- bike %>% 
-  filter(year>="2015")
-
-# Then we group by week and year to summarise by the average of bikes hired in each week of the data
-bike_weekly <- bike_weekly %>% 
-  group_by(year,week) %>% 
-  summarise(bikes_hired = median(bikes_hired))
-
-# After that we group only by month to create a colunm "Average" that is related to average of bikes rented in each week
-bike_weekly<- bike_weekly %>% 
-  group_by(week) %>% 
-  mutate(average= median(bikes_hired))
-
-
-# Then, we create a column called "Rentals_change" to know by how much the weekly rentals has changed compared to the average
-bike_weekly <- bike_weekly %>% 
-  mutate(rentals_change = ((bikes_hired - average)/average)) %>% 
-  ungroup() %>% 
-  
-  #This line of code creates a column that we will use to know if the change of rentals was positive (Above) or negative (Below)
-   mutate(change = ifelse(rentals_change>=0, "Above", "Below")) %>% 
-
-#This line of code creates another column that will be used to shade the graph depending on the week
-  mutate(shade = if_else(week <=13|week>=26&week<=39,"white","grey")) %>% 
-  
-  #This line of code creates another column that will be used to change the colour of the rug depending on the column "Change"
-  mutate(rug_colour = if_else(change=="Below","#DEAFB1","#BEEBC2"))
-
-
-#After treating the data, we plot the graph, divided by year 
-excess_rentals_graph2 <- ggplot(bike_weekly, aes(x = week,y= rentals_change)) +
-  geom_line()+
-  
-   #No we fill the area between the two plots by using geom_ribbon
-  geom_ribbon(aes(ymin = 0, ymax = pmin(0,rentals_change), fill = "Above")) + 
-geom_ribbon(aes(ymin = rentals_change, ymax = pmin(0,rentals_change), fill = "Below"))+
-  facet_wrap(~year) +
-  
-  # This line of code changes the filling of the shade of the graph
-  geom_tile(aes(fill = shade),
-            width = 1, height = Inf, alpha = 0.3)+ 
-  
-  # Here we assign the column "rug color" to the color to the rug that will be used
-  geom_rug(color = bike_weekly$rug_colour,sides="b") +
-  
-#Now we assign the colors that will be used in the plot
-  scale_fill_manual(values = c("#DEAFB1","#BEEBC2","grey","white"))+
-  
-  theme_minimal()+
-  #Including breaks to the graph
-  scale_x_continuous(breaks=seq(13, 53, 13))+
-  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) + 
-  
-  #In these three lines we change and customize the theme used
-  theme(axis.ticks = element_blank())+
-  theme(legend.position = "none") + 
-  theme(panel.border = element_blank())+
-  
-  # Then we add the names of the Titles
-  labs(x = "", y = "", title = "Weekly changes in TfL bike rentals", subtitle = "% change from weekly averages \ncalculated between 2015-2019", caption = "Source: TfL, London Data Store")+
- coord_fixed(ratio = 25)
-
-excess_rentals_graph2
-```
-
-
-
-Should you use the mean or the median to calculate your expected rentals? Why?
-
-In our opinion, we should use the median to calculate the expected rentals. Just as it was pointed in the graph "Distribution of bikes hired per month", there are months that are completely skewed or that have a very low kurtosis (April to June of 2020), then, if we would use the average, the impact of these "outliers" would affect our data and produce results that don't really express the central tendency(median) about the hiring of Boris Bikes.
+The confidence intervals increase showing that Trump's supporter and disapprovers further diverged as the evolving economic situation, politics (BLM), and pandemic contributed to uncertainty.

@@ -5,8 +5,96 @@ categories:
 date: "2017-10-31T22:26:09-05:00"
 description: Lorem Etiam Nullam
 draft: false
-image: pic09.jpg
+image: pic25.jpg
 keywords: ""
-slug: magna
-title: Magna
+slug: blog2
+title: Effects of Coronavirus on Boris Bikes
 ---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, include=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+```
+
+
+
+# Trump's Approval Margins
+
+As we saw in class, fivethirtyeight.com has detailed data on [all polls that track the president's approval ](https://projects.fivethirtyeight.com/trump-approval-ratings)
+
+```{r, cache=TRUE}
+# Import approval polls data
+
+approval_polllist <- read_csv('https://projects.fivethirtyeight.com/trump-approval-data/approval_polllist.csv') 
+
+glimpse(approval_polllist)
+
+# Use `lubridate` to fix dates, as they are given as characters.
+library(lubridate)
+approval_polllist_fixdates <- approval_polllist %>% 
+  mutate(timestamp = parse_date_time(timestamp, orders = "HMSdmy"),modeldate = mdy(modeldate), startdate = mdy(startdate), enddate = mdy(enddate), createddate = mdy(createddate))
+
+```
+
+## Create a plot
+
+What I would like you to do is to calculate the average net approval rate (approve- disapprove) for each week since he got into office. I want you plot the net approval, along with its 95% confidence interval. There are various dates given for each poll, please use `enddate`, i.e., the date the poll ended.
+
+You can facet by year, and add an orange line at zero. Your plot should look like this:
+
+```{r trump_marginsCalc, echo=FALSE, out.width="100%"}
+approval_polllist_AvgNetAp <- approval_polllist_fixdates %>% 
+  filter(subgroup=="Voters") %>% 
+  mutate(week = week(enddate), year=year(enddate)) %>% 
+  mutate(Avg_Net_Approval = adjusted_approve - adjusted_disapprove) %>% 
+  group_by(week, year) %>% 
+  summarise(Mean = mean(Avg_Net_Approval),
+            lower = Mean - qt(0.975, 194)*sd(Avg_Net_Approval)/sqrt(n()),
+            upper = Mean + qt(0.975, 194)*sd(Avg_Net_Approval)/sqrt(n())
+            ) %>%
+  unique(by = c("week", "year")) %>% 
+   arrange(year, week)
+
+Approval_plot <- ggplot(approval_polllist_AvgNetAp, aes(x=week,y=Mean, color = as.factor(year))) +   geom_line() + 
+  facet_wrap(~year) + 
+  geom_point(size = 1) + 
+  geom_hline(yintercept=0, color = "gold")+
+  labs(title = "Trump's net approval consistently negative", y = "Avg Net Approval (%)", x = "Week") + 
+  theme_bw() +
+  geom_ribbon(aes(ymin=lower, ymax=upper), linetype=1, alpha=0.1)+
+  theme(legend.position="none")+
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.1, decimal.mark = '.'), 
+              breaks = c(7.5, 5, 2.5,0.0,-2.5, -5.0, -7.5, -10.0, -12.5, -15.0, -17.5, -20.0))
+Approval_plot
+
+```
+## Compare Confidence Intervals
+
+Compare the confidence intervals for `week 15` (6-12 April 2020) and `week 34` (17-23 August 2020). Can you explain what's going on? One paragraph would be enough.
+
+The confidence intervals increase showing that Trump's supporter and disapprovers further diverged as the evolving economic situation, politics (BLM), and pandemic contributed to uncertainty.
